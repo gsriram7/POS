@@ -5,9 +5,8 @@ file = open("en_train_tagged.txt", "r")
 word_to_tag = {}
 tag_to_words = {}
 
-count = 0
-for line in file:
-    count += 1
+for line in file.readlines():
+    line = line.strip("\n")
     for word in line.split(" "):
         (w, tag) = utils.split_word_from_tag(word)
 
@@ -21,7 +20,6 @@ for line in file:
 
 file.close()
 
-print count
 print word_to_tag['In']
 print tag_to_words['IN']
 print "Total tags %s" % len(tag_to_words)
