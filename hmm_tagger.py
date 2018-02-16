@@ -1,4 +1,5 @@
 import utils as utils
+import json
 
 file = open("en_train_tagged.txt", "r")
 
@@ -65,6 +66,7 @@ def transitional_probability(tag_bigrams):
         for b in tag_bigrams.keys():
             temp = tag_bigrams.get(a, {})
             freq_a_b = temp.get(b, 0)
+            # TODO: Instead of assigning 0, try to smooth it
             if (freq_a_b == 0):
                 sub_temp = conditional_prob.get(a, {})
                 sub_temp[b] = float(0)
@@ -77,8 +79,18 @@ def transitional_probability(tag_bigrams):
 
 tp = transitional_probability(bigrams)
 
-import json
-
 with open('en_tp.json', 'w') as fp:
     json.dump(tp, fp)
 
+emission_probability = {}
+
+for word in word_freq.keys():
+    for tag in tag_freq.keys():
+        temp = emission_probability.get(word, {})
+        freq = word_and_tag_freq.get(word+"/"+tag, 0)
+        if freq != 0:
+            temp[tag] = float(freq) / float(tag_freq.get(tag, 1))
+            emission_probability[word] = temp
+
+with open('en_emission.json', 'w') as fp:
+    json.dump(emission_probability, fp)
