@@ -57,3 +57,28 @@ print word_freq
 print word_and_tag_freq
 print sum(bigrams['start_213'].values())
 print bigrams
+
+
+def transitional_probability(tag_bigrams):
+    conditional_prob = {}
+    for a in tag_bigrams.keys():
+        for b in tag_bigrams.keys():
+            temp = tag_bigrams.get(a, {})
+            freq_a_b = temp.get(b, 0)
+            if (freq_a_b == 0):
+                sub_temp = conditional_prob.get(a, {})
+                sub_temp[b] = float(0)
+                conditional_prob[a] = sub_temp
+            else:
+                sub_temp = conditional_prob.get(a, {})
+                sub_temp[b] = float(freq_a_b) / float(sum(temp.values())- temp.get(end_tag, 0))
+                conditional_prob[a] = sub_temp
+    return conditional_prob
+
+tp = transitional_probability(bigrams)
+
+import json
+
+with open('en_tp.json', 'w') as fp:
+    json.dump(tp, fp)
+
