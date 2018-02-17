@@ -48,19 +48,16 @@ for line in file.readlines():
 
 file.close()
 
-print word_to_tags['In']
-print tag_to_words['IN']
-print "Total tags %s" % len(tag_to_words)
-print "Total unique words %s" % len(word_to_tags)
-print word_to_tags.keys()
-print tag_freq
-print word_freq
-print word_and_tag_freq
-print sum(bigrams['start_213'].values())
+# print "Total tags %s" % len(tag_to_words)
+# print "Total unique words %s" % len(word_to_tags)
+# print tag_freq
+# print word_freq
+# print word_and_tag_freq
+# print sum(bigrams['start_213'].values())
 print bigrams
 
 
-def transitional_probability(tag_bigrams):
+def compute_transition_probability(tag_bigrams):
     conditional_prob = {}
     for a in tag_bigrams.keys():
         for b in tag_bigrams.keys():
@@ -73,24 +70,65 @@ def transitional_probability(tag_bigrams):
                 conditional_prob[a] = sub_temp
             else:
                 sub_temp = conditional_prob.get(a, {})
-                sub_temp[b] = float(freq_a_b) / float(sum(temp.values())- temp.get(end_tag, 0))
+                sub_temp[b] = float(freq_a_b) / float(sum(temp.values()) - temp.get(end_tag, 0))
                 conditional_prob[a] = sub_temp
     return conditional_prob
 
-tp = transitional_probability(bigrams)
+
+transition_prob = compute_transition_probability(bigrams)
 
 with open('en_tp.json', 'w') as fp:
-    json.dump(tp, fp)
+    json.dump(transition_prob, fp, indent=4)
+fp.close
 
-emission_probability = {}
 
-for word in word_freq.keys():
-    for tag in tag_freq.keys():
-        temp = emission_probability.get(word, {})
-        freq = word_and_tag_freq.get(word+"/"+tag, 0)
-        if freq != 0:
-            temp[tag] = float(freq) / float(tag_freq.get(tag, 1))
-            emission_probability[word] = temp
+def compute_emission_probability(word_freq, tag_freq):
+    emission_probability = {}
+    for word in word_freq.keys():
+        for tag in tag_freq.keys():
+            temp = emission_probability.get(word, {})
+            freq = word_and_tag_freq.get(word + "/" + tag, 0)
+            if freq != 0:
+                temp[tag] = float(freq) / float(tag_freq.get(tag, 1))
+                emission_probability[word] = temp
+    return emission_probability
+
+
+emission_probability = compute_emission_probability(word_freq, tag_freq)
 
 with open('en_emission.json', 'w') as fp:
-    json.dump(emission_probability, fp)
+    json.dump(emission_probability, fp, indent=4)
+fp.close
+
+model = {}
+model['transition_probability'] = transition_prob
+model['emission_probability'] = emission_probability
+
+with open('model.json', 'w') as fp:
+    json.dump(model, fp, indent=4)
+fp.close
+
+with open('model.json', 'r') as wp:
+    mine = json.load(wp)
+
+print mine['transition_probability']
+print mine['emission_probability']
+
+# with open('en_vince.json', 'r') as fp:
+#     vince = json.load(fp)
+#
+# print vince[0]['emissionProbabilities']
+# vince_data=vince[0]['emissionProbabilities']
+#
+# proc = 0
+# for k in vince_data.keys():
+#     for b in vince_data[k].keys():
+#         proc+=1
+#         try:
+#             if (vince_data[k][b] != emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]):
+#                 w = [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore'), vince_data[k][b], emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]]
+#                 print "Wrong %s" % w
+#         except Exception:
+#             print "Exception while %s" % [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore')]
+#
+# print "Done with %s kvs" % proc
