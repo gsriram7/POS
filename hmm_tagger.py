@@ -105,30 +105,11 @@ model['transition_probability'] = transition_prob
 model['emission_probability'] = emission_probability
 
 with open('model.json', 'w') as fp:
-    json.dump(model, fp, indent=4)
+    json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close
 
 with open('model.json', 'r') as wp:
     mine = json.load(wp)
 
 print mine['transition_probability']
-print mine['emission_probability']
-
-# with open('en_vince.json', 'r') as fp:
-#     vince = json.load(fp)
-#
-# print vince[0]['emissionProbabilities']
-# vince_data=vince[0]['emissionProbabilities']
-#
-# proc = 0
-# for k in vince_data.keys():
-#     for b in vince_data[k].keys():
-#         proc+=1
-#         try:
-#             if (vince_data[k][b] != emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]):
-#                 w = [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore'), vince_data[k][b], emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]]
-#                 print "Wrong %s" % w
-#         except Exception:
-#             print "Exception while %s" % [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore')]
-#
-# print "Done with %s kvs" % proc
+# print mine['emission_probability']['basic-ally']
