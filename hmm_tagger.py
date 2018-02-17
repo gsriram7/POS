@@ -48,12 +48,12 @@ for line in file.readlines():
 
 file.close()
 
-# print "Total tags %s" % len(tag_to_words)
-# print "Total unique words %s" % len(word_to_tags)
-# print tag_freq
-# print word_freq
-# print word_and_tag_freq
-# print sum(bigrams['start_213'].values())
+print "Total tags %s" % len(tag_to_words)
+print "Total unique words %s" % len(word_to_tags)
+print tag_freq
+print word_freq
+print word_and_tag_freq
+print sum(bigrams['start_213'].values())
 print bigrams
 
 
@@ -64,11 +64,7 @@ def compute_transition_probability(tag_bigrams):
             temp = tag_bigrams.get(a, {})
             freq_a_b = temp.get(b, 0)
             # TODO: Instead of assigning 0, try to smooth it
-            if (freq_a_b == 0):
-                sub_temp = conditional_prob.get(a, {})
-                sub_temp[b] = float(0)
-                conditional_prob[a] = sub_temp
-            else:
+            if freq_a_b != 0:
                 sub_temp = conditional_prob.get(a, {})
                 sub_temp[b] = float(freq_a_b) / float(sum(temp.values()) - temp.get(end_tag, 0))
                 conditional_prob[a] = sub_temp
