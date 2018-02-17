@@ -108,8 +108,3 @@ with open('model.json', 'w') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close
 
-with open('model.json', 'r') as wp:
-    mine = json.load(wp)
-
-print mine['transition_probability']
-# print mine['emission_probability']['basic-ally']

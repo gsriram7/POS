@@ -25,21 +25,30 @@ raw1.close()
 
 file.close()
 
-# with open('en_vince.json', 'r') as fp:
-#     vince = json.load(fp)
-#
-# print vince[0]['emissionProbabilities']
-# vince_data=vince[0]['emissionProbabilities']
-#
-# proc = 0
-# for k in vince_data.keys():
-#     for b in vince_data[k].keys():
-#         proc+=1
-#         try:
-#             if (vince_data[k][b] != emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]):
-#                 w = [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore'), vince_data[k][b], emission_probability[k.encode('ascii', 'ignore')][b.encode('ascii', 'ignore')]]
-#                 print "Wrong %s" % w
-#         except Exception:
-#             print "Exception while %s" % [k.encode('ascii', 'ignore'), b.encode('ascii', 'ignore')]
-#
-# print "Done with %s kvs" % proc
+import json
+
+with open('en_vince.json', 'r') as fp:
+    vince = json.load(fp)
+fp.close
+
+with open('model.json', 'r') as fp:
+    mine = json.load(fp)
+fp.close
+
+emission_probability = mine['emission_probability']
+
+print vince[0]['emissionProbabilities']
+vince_data=vince[0]['emissionProbabilities']
+
+proc = 0
+for k in vince_data.keys():
+    for b in vince_data[k].keys():
+        proc+=1
+        try:
+            if (vince_data[k][b] != emission_probability[k][b]):
+                w = [k, b, vince_data[k][b], emission_probability[k][b]]
+                print "Wrong %s" % w
+        except Exception:
+            print "Exception while %s" % [k, b]
+
+print "Done with %s kvs" % proc
