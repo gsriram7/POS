@@ -1,7 +1,7 @@
 import utils as utils
 import json
 
-file = open("en_train_tagged.txt", "r")
+file = open("assignment_test_corpus_1.txt", "r")
 
 word_to_tags = {}
 tag_to_words = {}
@@ -75,7 +75,7 @@ transition_prob = compute_transition_probability(bigrams)
 
 with open('en_tp.json', 'w') as fp:
     json.dump(transition_prob, fp, indent=4)
-fp.close
+fp.close()
 
 
 def compute_emission_probability(word_freq, tag_freq):
@@ -94,7 +94,7 @@ emission_probability = compute_emission_probability(word_freq, tag_freq)
 
 with open('en_emission.json', 'w') as fp:
     json.dump(emission_probability, fp, indent=4)
-fp.close
+fp.close()
 
 model = {}
 model['transition_probability'] = transition_prob
@@ -102,5 +102,5 @@ model['emission_probability'] = emission_probability
 
 with open('model.json', 'w') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
-fp.close
+fp.close()
 

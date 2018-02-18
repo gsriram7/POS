@@ -29,11 +29,11 @@ import json
 
 with open('en_vince.json', 'r') as fp:
     vince = json.load(fp)
-fp.close
+fp.close()
 
 with open('model.json', 'r') as fp:
     mine = json.load(fp)
-fp.close
+fp.close()
 
 emission_probability = mine['emission_probability']
 
