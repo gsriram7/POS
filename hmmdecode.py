@@ -1,14 +1,14 @@
 import json
 import utils
 
-with open("/Users/selvaram/selva/POS/model.json", 'r') as fp:
+with open("model.json", 'r', encoding='utf8') as fp:
     model = json.load(fp)
 fp.close()
 
 emission_probability = model['emission_probability']
 transition_probability = model['transition_probability']
 
-file = open("/Users/selvaram/selva/POS/assignment_dev_1.txt", 'r')
+file = open("zh_dev_raw.txt", 'r', encoding='utf8')
 
 
 def get_probability_and_backpointer(transition_probability,
@@ -16,13 +16,13 @@ def get_probability_and_backpointer(transition_probability,
                                     old_prev_states,
                                     current_word, prev_prob):
     decoded = {}
-    for curr_state in emission_probability[current_word].keys():
+    for curr_state in utils.get_or_default(emission_probability, [current_word], []):
         max_tag_prob = 0
         back_pointer = ""
 
         for prev_state in old_prev_states:
-            curr_state_prob = utils.get_or_default(transition_probability, [prev_state, curr_state], 0) \
-                              * utils.get_or_default(emission_probability, [current_word, curr_state], 0) \
+            curr_state_prob = utils.get_or_default(transition_probability, [prev_state, curr_state], 0.00000000001) \
+                              * utils.get_or_default(emission_probability, [current_word, curr_state], 0.00000000001) \
                               * utils.get_or_default(prev_prob, [prev_state, 'prob'], 0)
 
             if curr_state_prob > max_tag_prob:
@@ -36,7 +36,7 @@ def get_probability_and_backpointer(transition_probability,
 
 
 def get_top_tag(tags_for_word):
-    temp = tags_for_word.values()[0]
+    temp = list(tags_for_word.values())[0]
     max_prob = 0
     tag = ''
     for key in temp.keys():
@@ -50,12 +50,16 @@ def get_top_tag(tags_for_word):
 
 def extract_tags(probs_with_backpointers):
     res = []
+    prev_top_tag = ""
     top_tag = get_top_tag(probs_with_backpointers[-1])
 
     for dict in reversed(probs_with_backpointers):
-        word = dict.keys()[0]
+        prev_top_tag = top_tag
+        word = list(dict.keys())[0]
         res.append((word, top_tag))
-        top_tag = dict[word][top_tag]['parent']
+        # TODO: Default to prev tags top_tag
+        # top_tag = dict[word][top_tag]['parent']
+        top_tag = utils.get_or_default(dict, [word, top_tag, 'parent'], prev_top_tag)
 
     return res
 
@@ -69,6 +73,8 @@ def format_output_line(list_of_tuples):
     return res.strip(" ")
 
 
+output = open('opt.txt', 'w', encoding='utf8')
+
 c = 1
 for line in file.readlines():
     viterbi = []
@@ -81,15 +87,19 @@ for line in file.readlines():
         try:
             curr_state_prob = get_probability_and_backpointer(transition_probability, emission_probability, old_states,
                                                               word, prev_state_prob)
-        except Exception:
-            print "Problem %s" % word
+        except KeyError:
+            print("Problem %s" % word)
         old_states = curr_state_prob.keys()
         prev_state_prob = curr_state_prob
-        # TODO: Store probabilities of words along with indices as duplicate words in a line will cause problems as it will overrite dict
         viterbi.append({word: prev_state_prob})
         prev_word = word
-    print format_output_line(extract_tags(viterbi))
-    print "Done %s" % c
+    try:
+        output.write(format_output_line(extract_tags(viterbi)) + '\n')
+    except KeyError:
+        print('Error for line: %s' %line)
+        output.write('\n')
+    print("Done %s" % c)
     c += 1
 
+output.close()
 file.close()

@@ -1,7 +1,7 @@
 import utils as utils
 import json
 
-file = open("assignment_test_corpus_1.txt", "r")
+file = open("zh_dev_tagged.txt", "r", encoding="utf8")
 
 word_to_tags = {}
 tag_to_words = {}
@@ -48,13 +48,13 @@ for line in file.readlines():
 
 file.close()
 
-print "Total tags %s" % len(tag_to_words)
-print "Total unique words %s" % len(word_to_tags)
-print tag_freq
-print word_freq
-print word_and_tag_freq
-print sum(bigrams['start_213'].values())
-print bigrams
+print("Total tags %s" % len(tag_to_words))
+print("Total unique words %s" % len(word_to_tags))
+print(tag_freq)
+print(word_freq)
+print(word_and_tag_freq)
+print(sum(bigrams['start_213'].values()))
+print(bigrams)
 
 
 def compute_transition_probability(tag_bigrams):
@@ -100,7 +100,7 @@ model = {}
 model['transition_probability'] = transition_prob
 model['emission_probability'] = emission_probability
 
-with open('model.json', 'w') as fp:
+with open('model.json', 'w', encoding='utf8') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close()
 
