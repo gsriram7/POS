@@ -1,14 +1,14 @@
 import json
 import utils
 
-with open("model.json", 'r', encoding='utf8') as fp:
+with open("hmmmodel.json", 'r', encoding='utf8') as fp:
     model = json.load(fp)
 fp.close()
 
 emission_probability = model['emission_probability']
 transition_probability = model['transition_probability']
 
-file = open("zh_dev_raw.txt", 'r', encoding='utf8')
+file = open("en_dev_raw.txt", 'r', encoding='utf8')
 
 
 def get_probability_and_backpointer(transition_probability,
@@ -16,21 +16,27 @@ def get_probability_and_backpointer(transition_probability,
                                     old_prev_states,
                                     current_word, prev_prob):
     decoded = {}
-    for curr_state in utils.get_or_default(emission_probability, [current_word], []):
+    for curr_state in utils.get_or_default(emission_probability, [current_word], list(transition_probability.keys())):
         max_tag_prob = 0
         back_pointer = ""
 
         for prev_state in old_prev_states:
-            curr_state_prob = utils.get_or_default(transition_probability, [prev_state, curr_state], 0.00000000001) \
-                              * utils.get_or_default(emission_probability, [current_word, curr_state], 0.00000000001) \
+            curr_state_prob = utils.get_or_default(transition_probability, [prev_state, curr_state], 0) \
+                              * utils.get_or_default(emission_probability, [current_word, curr_state], 1) \
                               * utils.get_or_default(prev_prob, [prev_state, 'prob'], 0)
 
             if curr_state_prob > max_tag_prob:
                 max_tag_prob = curr_state_prob
                 back_pointer = prev_state
 
+            if max_tag_prob == 0:
+                print('come here')
+
         if max_tag_prob != 0:
             decoded[curr_state] = {'prob': max_tag_prob, 'parent': back_pointer}
+        else:
+            if max_tag_prob < 0:
+                print("Problem with %s" % current_word)
 
     return decoded
 
@@ -87,7 +93,7 @@ for line in file.readlines():
         try:
             curr_state_prob = get_probability_and_backpointer(transition_probability, emission_probability, old_states,
                                                               word, prev_state_prob)
-        except KeyError:
+        except EOFError:
             print("Problem %s" % word)
         old_states = curr_state_prob.keys()
         prev_state_prob = curr_state_prob
@@ -95,7 +101,8 @@ for line in file.readlines():
         prev_word = word
     try:
         output.write(format_output_line(extract_tags(viterbi)) + '\n')
-    except KeyError:
+        output.flush()
+    except EOFError:
         print('Error for line: %s' %line)
         output.write('\n')
     print("Done %s" % c)

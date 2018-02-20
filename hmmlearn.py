@@ -1,7 +1,7 @@
 import utils as utils
 import json
 
-file = open("zh_dev_tagged.txt", "r", encoding="utf8")
+file = open("en_train_tagged.txt", "r", encoding="utf8")
 
 word_to_tags = {}
 tag_to_words = {}
@@ -48,35 +48,32 @@ for line in file.readlines():
 
 file.close()
 
-print("Total tags %s" % len(tag_to_words))
-print("Total unique words %s" % len(word_to_tags))
-print(tag_freq)
-print(word_freq)
-print(word_and_tag_freq)
-print(sum(bigrams['start_213'].values()))
-print(bigrams)
+# print("Total tags %s" % len(tag_to_words))
+# print(tag_to_words.keys())
+# print("Total unique words %s" % len(word_to_tags))
+# print(tag_freq)
+# print(word_freq)
+# print(word_and_tag_freq)
+# print(sum(bigrams['start_213'].values()))
+# print("Bigrams: %s" %bigrams)
 
 
 def compute_transition_probability(tag_bigrams):
     conditional_prob = {}
     for a in tag_bigrams.keys():
         for b in tag_bigrams.keys():
+            total_unique_tags = len(tag_to_words)
             temp = tag_bigrams.get(a, {})
             freq_a_b = temp.get(b, 0)
             # TODO: Instead of assigning 0, try to smooth it
-            if freq_a_b != 0:
-                sub_temp = conditional_prob.get(a, {})
-                sub_temp[b] = float(freq_a_b) / float(sum(temp.values()) - temp.get(end_tag, 0))
-                conditional_prob[a] = sub_temp
+            # if freq_a_b != 0:
+            sub_temp = conditional_prob.get(a, {})
+            sub_temp[b] = (float(freq_a_b) + 1) / (float(sum(temp.values()) - temp.get(end_tag, 0)) + (total_unique_tags * total_unique_tags + total_unique_tags + total_unique_tags))
+            conditional_prob[a] = sub_temp
     return conditional_prob
 
 
 transition_prob = compute_transition_probability(bigrams)
-
-with open('en_tp.json', 'w') as fp:
-    json.dump(transition_prob, fp, indent=4)
-fp.close()
-
 
 def compute_emission_probability(word_freq, tag_freq):
     emission_probability = {}
@@ -92,15 +89,11 @@ def compute_emission_probability(word_freq, tag_freq):
 
 emission_probability = compute_emission_probability(word_freq, tag_freq)
 
-with open('en_emission.json', 'w') as fp:
-    json.dump(emission_probability, fp, indent=4)
-fp.close()
-
 model = {}
 model['transition_probability'] = transition_prob
 model['emission_probability'] = emission_probability
 
-with open('model.json', 'w', encoding='utf8') as fp:
+with open('hmmmodel.json', 'w', encoding='utf8') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close()
 
