@@ -1,7 +1,8 @@
-import utils as utils
+import utils
 import json
+import math
 
-file = open("en_train_tagged.txt", "r", encoding="utf8")
+file = open("zh_train_tagged.txt", "r", encoding="utf8")
 
 word_to_tags = {}
 tag_to_words = {}
@@ -68,7 +69,7 @@ def compute_transition_probability(tag_bigrams):
             # TODO: Instead of assigning 0, try to smooth it
             # if freq_a_b != 0:
             sub_temp = conditional_prob.get(a, {})
-            sub_temp[b] = (float(freq_a_b) + 1) / (float(sum(temp.values()) - temp.get(end_tag, 0)) + (total_unique_tags * total_unique_tags + total_unique_tags + total_unique_tags))
+            sub_temp[b] = math.log(float(freq_a_b) + 1, 2) - math.log((float(sum(temp.values()) - temp.get(end_tag, 0)) + (total_unique_tags * total_unique_tags + total_unique_tags + total_unique_tags)), 2)
             conditional_prob[a] = sub_temp
     return conditional_prob
 
@@ -82,7 +83,7 @@ def compute_emission_probability(word_freq, tag_freq):
             temp = emission_probability.get(word, {})
             freq = word_and_tag_freq.get(word + "/" + tag, 0)
             if freq != 0:
-                temp[tag] = float(freq) / float(tag_freq.get(tag, 1))
+                temp[tag] = math.log(float(freq), 2) - math.log(float(tag_freq.get(tag, 1)), 2)
                 emission_probability[word] = temp
     return emission_probability
 
@@ -93,7 +94,7 @@ model = {}
 model['transition_probability'] = transition_prob
 model['emission_probability'] = emission_probability
 
-with open('hmmmodel.json', 'w', encoding='utf8') as fp:
+with open('hmmmodel.txt', 'w', encoding='utf8') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close()
 

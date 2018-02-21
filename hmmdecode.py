@@ -1,14 +1,17 @@
 import json
 import utils
+import math
+import sys
 
-with open("hmmmodel.json", 'r', encoding='utf8') as fp:
+with open("hmmmodel.txt", 'r', encoding='utf8') as fp:
     model = json.load(fp)
 fp.close()
 
 emission_probability = model['emission_probability']
 transition_probability = model['transition_probability']
+all_tags_in_tp = list(transition_probability.keys())
 
-file = open("en_dev_raw.txt", 'r', encoding='utf8')
+file = open("zh_dev_raw.txt", 'r', encoding='utf8')
 
 
 def get_probability_and_backpointer(transition_probability,
@@ -16,26 +19,26 @@ def get_probability_and_backpointer(transition_probability,
                                     old_prev_states,
                                     current_word, prev_prob):
     decoded = {}
-    for curr_state in utils.get_or_default(emission_probability, [current_word], list(transition_probability.keys())):
-        max_tag_prob = 0
+    for curr_state in utils.get_or_default(emission_probability, [current_word], all_tags_in_tp):
+        max_tag_prob = math.log(sys.float_info.min)
         back_pointer = ""
 
         for prev_state in old_prev_states:
             curr_state_prob = utils.get_or_default(transition_probability, [prev_state, curr_state], 0) \
-                              * utils.get_or_default(emission_probability, [current_word, curr_state], 1) \
-                              * utils.get_or_default(prev_prob, [prev_state, 'prob'], 0)
+                              + utils.get_or_default(emission_probability, [current_word, curr_state], 0) \
+                              + utils.get_or_default(prev_prob, [prev_state, 'prob'], 0)
 
             if curr_state_prob > max_tag_prob:
                 max_tag_prob = curr_state_prob
                 back_pointer = prev_state
 
-            if max_tag_prob == 0:
+            if max_tag_prob == math.log(sys.float_info.min):
                 print('come here')
 
         if max_tag_prob != 0:
             decoded[curr_state] = {'prob': max_tag_prob, 'parent': back_pointer}
         else:
-            if max_tag_prob < 0:
+            if max_tag_prob < math.log(sys.float_info.min):
                 print("Problem with %s" % current_word)
 
     return decoded
@@ -43,7 +46,7 @@ def get_probability_and_backpointer(transition_probability,
 
 def get_top_tag(tags_for_word):
     temp = list(tags_for_word.values())[0]
-    max_prob = 0
+    max_prob = math.log(sys.float_info.min)
     tag = ''
     for key in temp.keys():
         prob = temp[key]['prob']
@@ -79,7 +82,7 @@ def format_output_line(list_of_tuples):
     return res.strip(" ")
 
 
-output = open('opt.txt', 'w', encoding='utf8')
+output = open('hmmoutput.txt', 'w', encoding='utf8')
 
 c = 1
 for line in file.readlines():
