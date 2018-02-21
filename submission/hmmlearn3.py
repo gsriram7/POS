@@ -63,16 +63,21 @@ def compute_transition_probability(tag_bigrams):
     conditional_prob = {}
     for a in tag_bigrams.keys():
         for b in tag_bigrams.keys():
-            total_unique_tags = len(tag_to_words)
+            total_unique_tags = len(tag_to_words) + 1
             temp = tag_bigrams.get(a, {})
             freq_a_b = temp.get(b, 0)
             # TODO: Instead of assigning 0, try to smooth it
             # if freq_a_b != 0:
             sub_temp = conditional_prob.get(a, {})
-            sub_temp[b] = (float(freq_a_b) + 1) / (float(sum(temp.values()) - temp.get(end_tag, 0)) + (total_unique_tags * total_unique_tags + total_unique_tags + total_unique_tags))
+            sub_temp[b] = (float(freq_a_b) + 1) / (float(sum(temp.values())) + (total_unique_tags * total_unique_tags + total_unique_tags + 1))
             conditional_prob[a] = sub_temp
     return conditional_prob
 
+end_tag_freq = {}
+for key in bigrams.keys():
+    end_tag_freq[key] = float(0)
+end_tag_freq['end_146'] = 1
+bigrams['end_146'] = end_tag_freq
 
 transition_prob = compute_transition_probability(bigrams)
 
@@ -89,6 +94,7 @@ def compute_emission_probability(word_freq, tag_freq):
 
 
 emission_probability = compute_emission_probability(word_freq, tag_freq)
+emission_probability['end_146'] = {'end_146': 1}
 
 model = {}
 model['transition_probability'] = transition_prob
@@ -97,4 +103,5 @@ model['emission_probability'] = emission_probability
 with open('hmmmodel.txt', 'w', encoding='utf8') as fp:
     json.dump(model, fp, indent=4, ensure_ascii=False)
 fp.close()
+
 

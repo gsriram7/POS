@@ -73,7 +73,7 @@ def extract_tags(probs_with_backpointers):
 
 def format_output_line(list_of_tuples):
     res = ""
-    for t in reversed(list_of_tuples):
+    for t in reversed(list_of_tuples[1::]):
         (word, tag) = t
         res += word + "/" + tag + " "
 
@@ -90,7 +90,9 @@ for line in file.readlines():
     old_states = [prev_word]
     prev_state_prob = {prev_word: {'prob': 1}}
     state_number = 1
-    for word in line.split(' '):
+    words = line.split(' ')
+    words.append('end_146')
+    for word in words:
         try:
             curr_state_prob = get_probability_and_backpointer(transition_probability, emission_probability, old_states,
                                                               word, prev_state_prob)
@@ -111,3 +113,4 @@ for line in file.readlines():
 
 output.close()
 file.close()
+
