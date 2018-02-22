@@ -1,0 +1,11 @@
+[Executed at: Wed Feb 21 17:43:15 PST 2018]
+
+Results for English:
+Correct: 22144
+Total: 25148
+Accuracy: 0.880547160808
+
+Results for Chinese:
+Correct: 10942
+Total: 12663
+Accuracy: 0.864092237227
