@@ -65,15 +65,15 @@ def extract_tags(probs_with_backpointers):
         word = list(dict.keys())[0]
         res.append((word, top_tag))
         # TODO: Default to prev tags top_tag
-        top_tag = dict[word][top_tag]['parent']
-        # top_tag = utils.get_or_default(dict, [word, top_tag, 'parent'], prev_top_tag)
+        # top_tag = dict[word][top_tag]['parent']
+        top_tag = utils.get_or_default(dict, [word, top_tag, 'parent'], prev_top_tag)
 
     return res
 
 
 def format_output_line(list_of_tuples):
     res = ""
-    for t in reversed(list_of_tuples):
+    for t in reversed(list_of_tuples[1::]):
         (word, tag) = t
         res += word + "/" + tag + " "
 
@@ -90,11 +90,13 @@ for line in file.readlines():
     old_states = [prev_word]
     prev_state_prob = {prev_word: {'prob': 1}}
     state_number = 1
-    for word in line.split(' '):
+    words = line.split(' ')
+    words.append('end_146')
+    for word in words:
         try:
             curr_state_prob = get_probability_and_backpointer(transition_probability, emission_probability, old_states,
                                                               word, prev_state_prob)
-        except EOFError:
+        except Exception:
             print("Problem %s" % word)
         old_states = curr_state_prob.keys()
         prev_state_prob = curr_state_prob
@@ -103,11 +105,12 @@ for line in file.readlines():
     try:
         output.write(format_output_line(extract_tags(viterbi)) + '\n')
         output.flush()
-    except EOFError:
+    except Exception:
         print('Error for line: %s' %line)
         output.write('\n')
-    print("Done %s" % c)
+    # print("Done %s" % c)
     c += 1
 
 output.close()
 file.close()
+
