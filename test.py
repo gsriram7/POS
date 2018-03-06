@@ -37,7 +37,7 @@ fp.close()
 
 emission_probability = mine['emission_probability']
 
-print vince[0]['emissionProbabilities']
+print(vince[0]['emissionProbabilities'])
 vince_data=vince[0]['emissionProbabilities']
 
 proc = 0
@@ -47,8 +47,8 @@ for k in vince_data.keys():
         try:
             if (vince_data[k][b] != emission_probability[k][b]):
                 w = [k, b, vince_data[k][b], emission_probability[k][b]]
-                print "Wrong %s" % w
+                print("Wrong %s" % w)
         except Exception:
-            print "Exception while %s" % [k, b]
+            print("Exception while %s" % [k, b])
 
-print "Done with %s kvs" % proc
+print("Done with %s kvs" % proc)
